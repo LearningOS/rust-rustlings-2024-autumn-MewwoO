@@ -29,9 +29,9 @@ impl Package {
 
     fn is_international(&self) -> bool {
         if self.recipient_country == self.sender_country {
-            true
-        } else {
             false
+        } else {
+            true
         }
     }
 
