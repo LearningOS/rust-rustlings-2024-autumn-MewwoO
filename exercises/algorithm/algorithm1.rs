@@ -2,19 +2,18 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
 
 #[derive(Debug)]
-struct Node<T> {
+struct Node<T: Ord> {
     val: T,
     next: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Node<T> {
+impl<T: Ord> Node<T> {
     fn new(t: T) -> Node<T> {
         Node {
             val: t,
@@ -23,19 +22,19 @@ impl<T> Node<T> {
     }
 }
 #[derive(Debug)]
-struct LinkedList<T> {
+struct LinkedList<T: Ord> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: Ord + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: Ord  + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,15 +71,55 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+		// Self {
+        //     length: 0,
+        //     start: None,
+        //     end: None,
+        // }
+        let mut merged_list = LinkedList::new();
+
+        // Get first nodes of both lists
+        let mut node_a = list_a.start;
+        let mut node_b = list_b.start;
+
+        // Merge the nodes in order
+        while let (Some(node_a_ptr), Some(node_b_ptr)) = (node_a, node_b) {
+            unsafe {
+                let val_a = &(*node_a_ptr.as_ptr()).val;
+                let val_b = &(*node_b_ptr.as_ptr()).val;
+
+                // Compare values and add the smaller one to the merged list
+                if val_a <= val_b {
+                    merged_list.add(val_a.clone());
+                    node_a = (*node_a_ptr.as_ptr()).next;
+                } else {
+                    merged_list.add(val_b.clone());
+                    node_b = (*node_b_ptr.as_ptr()).next;
+                }
+            }
         }
+
+        // Add remaining nodes from list_a, if any
+        while let Some(node_a_ptr) = node_a {
+            unsafe {
+                merged_list.add((*node_a_ptr.as_ptr()).val.clone());
+                node_a = (*node_a_ptr.as_ptr()).next;
+            }
+        }
+
+        // Add remaining nodes from list_b, if any
+        while let Some(node_b_ptr) = node_b {
+            unsafe {
+                merged_list.add((*node_b_ptr.as_ptr()).val.clone());
+                node_b = (*node_b_ptr.as_ptr()).next;
+            }
+        }
+
+        merged_list
 	}
 }
 
-impl<T> Display for LinkedList<T>
+impl<T: Ord> Display for LinkedList<T>
 where
     T: Display,
 {
@@ -92,7 +131,7 @@ where
     }
 }
 
-impl<T> Display for Node<T>
+impl<T: Ord> Display for Node<T>
 where
     T: Display,
 {
